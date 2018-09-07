@@ -1,9 +1,9 @@
-/***************************************************
- *                  MINIBOT V2.0                   *
- *                                                 *
- *  Um robô para Batalha Sumô (Mini - 10 x 10 cm)  *
- *                                                 *
- * Autor: Wederson Silva (Out 2017)                *
+/****************************************************
+ *        MINIBOT V3.0 (Mini - 10 x 10 cm)          *
+ *                                                  *
+ *  Um robô para Batalha Sumô autônomo ou Bluetooth *
+ *                                                  *
+ * Autor: Wederson Silva (Nov 2017)                 *
  ***************************************************/
 
 /*  DEFINICAO DOS PINOS   */
@@ -24,8 +24,10 @@ int VALOR_SL2 = 0;                // Captura o valor do sensor de linha de tras
 unsigned long TEMPO_PULSO;        // Tempo do pulso do ultrasson
 unsigned long DISTANCIA;          // Distancia calculada
 int LIMIAR = 100;                 // Limiar de valor para considerar linha branca
-int VELOC_MAX = 60;               // Controle de velocidade dos motores 0 - 255
+int VELOC_MAX = 100;               // Controle de velocidade dos motores 0 - 255
 int FLAG = 0;                     // FLAG que auxilia na funcao PROCURA
+int BLUE_FLAG = 0;                // FLAG que define se usará ou não o Bluetooth
+char DIRECAO = 'A';               // DIRECAO RECEBIDA POR BLUETOOTH
 
 /*  DEFINICAO DE FUNCOES  */
 void LER_SL();                    // Funcao para LER SENSOR DE LINHA
@@ -36,6 +38,7 @@ void ESQUERDA();                  // Funcao que movimente robo para ESQUERDA
 void DIREITA();                   // Funcao que movimente robo para DIREITA
 void PROCURAR();                  // Funcao que PROCURA O ADVERSARIO
 void ESCAPAR();                   // Funcao para ESCAPAR DA LINHA BRANCA
+void BLUETOOTH();                 // Funcao de controle BLUETOOTH
 
 /*  BLOCO DE CONFIGURACOES  */
 void setup() {                    
@@ -160,10 +163,36 @@ void LER_SOM()                    // Funcao para LER SENSOR ULTRASSONICO
   Serial.println(" cm");  
 }  
 
+void BLUETOOTH(){
+  BLUE_FLAG = 1;
+
+  if(DIRECAO == 'F'){
+    FRENTE();
+  }
+  else if(DIRECAO == 'B'){
+    TRAS();  
+  }
+  else if(DIRECAO == 'R'){
+    DIREITA();  
+  }
+  else if(DIRECAO == 'L'){
+    ESQUERDA();  
+  }
+  else if(DIRECAO == 'A'){
+    TRAS();    
+  }
+}
+
 void loop() {
 
   LER_SL();                       // LER SENSOR DE LINHA
-  LER_SOM();                      // LER SENSOR ULTRASSON
+  LER_SOM();                      // LER SENSOR ULTRASSON  
+
+  if((DIRECAO != 'A') || (BLUE_FLAG == 1))
+  {
+    BLUETOOTH();
+  }
+  
 
   analogWrite(PWM_A, VELOC_MAX);
   analogWrite(PWM_B, VELOC_MAX);  
