@@ -1,5 +1,5 @@
 /**************************************
- *        MINIBOT GLOVE V1.0          *
+ *        MINIBOT GLOVE V2.0          *
  *       (Mini - 10 x 10 cm)          *
  *                                    *
  *  Um robô controlado por uma luva   *
@@ -8,8 +8,8 @@
  * Autor: Wederson Silva (Sep 2018)   *
  **************************************/
 
-/* INCLUSAO DE BIBLIOECAS */
-#include <VirtualWire.h>
+/* INCLUSAO DE BIBLIOTECAS */
+#include <VirtualWire.h>          // Necessaria para o uso do par RF 433Mz
 
 /*  DEFINICAO DOS PINOS   */
 const int PWM_A = 3;              // Pino de PWM do Motor A
@@ -31,7 +31,6 @@ void TRAS();                      // Funcao que movimente robo para TRAS
 void ESQUERDA();                  // Funcao que movimente robo para ESQUERDA
 void DIREITA();                   // Funcao que movimente robo para DIREITA
 void PARA();                      // Funcao que PARA o robo
-void BLUETOOTH();                 // Funcao de controle BLUETOOTH
 
 /*  BLOCO DE CONFIGURACOES  */
 void setup() {                    
@@ -40,9 +39,6 @@ void setup() {
   vw_setup(2000);                 // Bits por segundo
   vw_rx_start();                  // Inicializa o receptor
   
-  delay(2000);                    // ESPERA DE 3 SEGUNDOS (5 SEG NO TOTAL)
-
-  //FRENTE();                       // GIRA PARA A ESQUERDA
   delay(600);                     // Durante 0.6 segundos
 
   pinMode(IN1, OUTPUT);           // Define de IN1 ate IN4 como pinos de saida
@@ -60,6 +56,7 @@ void FRENTE()                     // Funcao que movimente robo para FRENTE
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
+  //Serial.println("FRENTE");       // Mensagem para debugar o codigo
 }
 
 void TRAS()                       // Funcao que movimente robo para TRAS
@@ -68,45 +65,37 @@ void TRAS()                       // Funcao que movimente robo para TRAS
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
+  //Serial.println("TRAS");         // Mensagem para debugar o codigo
 }
 
-void DIREITA()                   // Funcao que movimente robo para ESQUERDA
+void DIREITA()                    // Funcao que movimente robo para ESQUERDA
 {
   digitalWrite(IN1, HIGH);        // De IN1 ate IN4 codigo para MOVIMENTAR O ROBO
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
+  //Serial.println("DIREITA");    // Mensagem para debugar o codigo
 }
 
-void ESQUERDA()                    // Funcao que movimente robo para DIREITA
+void ESQUERDA()                   // Funcao que movimente robo para DIREITA
 {
   digitalWrite(IN1, LOW);         // De IN1 ate IN4 codigo para MOVIMENTAR O ROBO
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
+  //Serial.println("ESQUERDA");   // Mensagem para debugar o codigo
 }
 
-void PARA()                    // Funcao que movimente robo para DIREITA
+void PARA()                       // Funcao que PARA o robo
 {
   digitalWrite(IN1, LOW);         // De IN1 ate IN4 codigo para MOVIMENTAR O ROBO
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, LOW);
+  //Serial.println("PARA");       // Mensagem para debugar o codigo
 }
 
 void loop() {
-
-  FRENTE();
-  delay(1000);
-  TRAS();
-  delay(1000);
-  DIREITA();
-  delay(1000);
-  ESQUERDA();
-  delay(1000);
-  PARA();
-  delay(1000);
-
 
   uint8_t message[VW_MAX_MESSAGE_LEN];    
   uint8_t msgLength = VW_MAX_MESSAGE_LEN; 
@@ -117,12 +106,24 @@ void loop() {
     for (int i = 0; i < msgLength; i++)
     {                        
       message[i] = message[i] - '0';      
-      
-      if (message[0] > 1){
-        PARA();
-      }      
     }
-  }     
+      if ((message[0] > 1 && message[2] < 4) && (message[3] < 4 && message[4] < 5)){
+        DIREITA();
+      }
+      else if ((message[0] < 2 && message[2] > 3) && (message[3] < 4 && message[4] < 5)){
+        FRENTE();
+      }
+      else if ((message[0] < 2 && message[2] < 4) && (message[3] > 3 && message[4] < 5)){
+        TRAS();
+      }
+      else if ((message[0] < 2 && message[2] < 4) && (message[3] < 4 && message[4] > 4)){
+        ESQUERDA();
+      }
+      else {
+        PARA();     
+      }
+   }
+       
   analogWrite(PWM_A, VELOC_MAX);
   analogWrite(PWM_B, VELOC_MAX);     
 }
